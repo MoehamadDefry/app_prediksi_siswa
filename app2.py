@@ -740,6 +740,45 @@ elif selected == "Proses & Analisis":
             X_enc, y, test_size=0.3, random_state=42
         )
 
+        # =========================
+        # SPLIT DATA ASLI (UNTUK ANALISIS FREKUENSI)
+        # =========================
+
+        X_train_asli, X_test_asli, _, _ = train_test_split(
+            X,
+            y,
+            test_size=0.3,
+            random_state=42
+        )
+
+        # ======================================
+        # DISTRIBUSI DATA TRAINING & TESTING
+        # ======================================
+
+        train_dist = (
+            y_train.value_counts()
+            .rename("Training")
+        )
+
+        test_dist = (
+            y_test.value_counts()
+            .rename("Testing")
+        )
+
+        dist_df = pd.concat(
+            [train_dist, test_dist],
+            axis=1
+        ).fillna(0).astype(int)
+
+        dist_df["Total"] = (
+            dist_df["Training"]
+            + dist_df["Testing"]
+        )
+
+        dist_df = dist_df.reindex(
+            ["Tinggi", "Sedang", "Rendah"]
+        )
+
         train_size = len(X_train)
         test_size = len(X_test)
 
@@ -788,6 +827,83 @@ elif selected == "Proses & Analisis":
         """
 
         components.html(split_html, height=200)
+
+        st.markdown("### 📊 Distribusi Data Training dan Testing")
+
+        st.markdown("""
+        <div class="explain-box">
+        Distribusi berikut menunjukkan jumlah data pada masing-masing kategori prestasi
+        setelah proses pembagian dataset menjadi data training dan data testing.
+        Data training digunakan untuk membangun model Categorical Naïve Bayes,
+        sedangkan data testing digunakan untuk mengevaluasi performa model.
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.dataframe(
+            dist_df,
+            use_container_width=True
+        )
+
+        st.bar_chart(
+            dist_df[["Training", "Testing"]]
+        )
+
+        mayoritas_train = dist_df["Training"].idxmax()
+        minoritas_train = dist_df["Training"].idxmin()
+
+        st.info(f"""
+        Data training didominasi oleh kategori **{mayoritas_train}**, sedangkan kategori dengan jumlah data paling sedikit adalah **{minoritas_train}**.
+
+        Distribusi ini akan digunakan sebagai dasar dalam proses pelatihan model Categorical Naïve Bayes.
+        """)
+
+        # ======================================
+        # DISTRIBUSI FREKUENSI ATRIBUT
+        # ======================================
+
+        st.subheader("📊 Distribusi Frekuensi Atribut")
+
+        fitur_freq = [
+            "kat_smt1",
+            "kat_smt2",
+            "kat_kehadiran",
+            "kat_ekskul",
+            "kat_perilaku"
+        ]
+
+        st.markdown("""
+        <div class="explain-box">
+        Distribusi frekuensi atribut menunjukkan jumlah kemunculan setiap kategori atribut
+        pada masing-masing label prestasi menggunakan data training. Informasi ini menjadi
+        dasar dalam perhitungan probabilitas <i>likelihood</i> pada algoritma Categorical
+        Naïve Bayes.
+        </div>
+        """, unsafe_allow_html=True)
+
+        tabs_freq = st.tabs(fitur_freq)
+
+        for i, f in enumerate(fitur_freq):
+
+            with tabs_freq[i]:
+
+                st.markdown(f"### Fitur : **{f}**")
+
+                freq_df = pd.crosstab(
+                    X_train_asli[f],
+                    y_train
+                )
+
+                freq_df = freq_df.reindex(
+                    columns=["Tinggi", "Sedang", "Rendah"],
+                    fill_value=0
+                )
+
+                freq_df["Total"] = freq_df.sum(axis=1)
+
+                st.dataframe(
+                    freq_df,
+                    use_container_width=True
+                )
 
         # =========================
         # TRAINING

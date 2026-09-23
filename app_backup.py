@@ -352,7 +352,23 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+/* Bikin navbar keluar dari batas container */
+.navbar-wrapper {
+    position: relative;
+    left: -2rem;
+    width: calc(100% + 4rem);
+}
 
+/* Biar menu full dan rata */
+ul.nav.nav-pills {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+</style>
+""", unsafe_allow_html=True)
 st.markdown("""
 <style>
 
@@ -381,23 +397,16 @@ st.markdown("""
 # SIDEBAR MENU
 # =========================
 
-with st.sidebar:
-    selected = option_menu(
-        menu_title="📊 ASPRI",
-        options=[
-            "Home",
-            "Upload Data",
-            "Proses & Analisis",
-            "Hasil Prediksi"
-        ],
-        icons=[
-            "house",
-            "upload",
-            "gear",
-            "bar-chart"
-        ]
-    )
+st.markdown('<div class="navbar-wrapper">', unsafe_allow_html=True)
 
+selected = option_menu(
+    menu_title=None,
+    options=["Home", "Upload Data", "Proses & Analisis", "Hasil Prediksi"],
+    icons=["house", "upload", "gear", "bar-chart"],
+    orientation="horizontal"
+)
+
+st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================
 # SESSION STATE
